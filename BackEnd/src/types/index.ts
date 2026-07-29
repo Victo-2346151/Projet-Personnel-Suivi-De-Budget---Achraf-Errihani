@@ -20,3 +20,15 @@ export interface IUtilisateurSansMotDePasse {
   courriel: string;
   dateCreation: Date;
 }
+
+/**
+ * Représente une catégorie de revenu ou de dépense appartenant à un
+ * utilisateur.
+ */
+export interface ICategorie {
+  id: number;
+  utilisateurId: number;
+  nom: string;
+  type: 'revenu' | 'depense';
+  budgetLimite: number | null;
+}

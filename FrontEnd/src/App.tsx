@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import { deconnecter, recupererUtilisateurConnecte } from './api/authentification';
 import PageAuthentification from './pages/PageAuthentification';
+import PageTableauDeBord from './pages/PageTableauDeBord';
 import type { IUtilisateurSansMotDePasse } from './types';
 
 /**
  * Composante racine de l'application.
  * Vérifie la session existante au démarrage, puis affiche soit la page
- * d'authentification, soit un écran simple pour l'utilisateur connecté.
+ * d'authentification, soit le tableau de bord de l'utilisateur connecté.
  */
 function App(): JSX.Element {
   const [utilisateurConnecte, setUtilisateurConnecte] = useState<IUtilisateurSansMotDePasse | null>(
@@ -36,10 +37,13 @@ function App(): JSX.Element {
 
   return (
     <div>
-      <h1>Bienvenue, {utilisateurConnecte.nom}!</h1>
-      <button type="button" onClick={gererDeconnexion}>
-        Se déconnecter
-      </button>
+      <header>
+        <span>Bonjour, {utilisateurConnecte.nom}</span>{' '}
+        <button type="button" onClick={gererDeconnexion}>
+          Se déconnecter
+        </button>
+      </header>
+      <PageTableauDeBord />
     </div>
   );
 }
