@@ -32,3 +32,33 @@ export interface ICategorie {
   type: 'revenu' | 'depense';
   budgetLimite: number | null;
 }
+
+/**
+ * Représente une transaction (revenu ou dépense) enregistrée par un
+ * utilisateur.
+ */
+export interface ITransaction {
+  id: number;
+  utilisateurId: number;
+  categorieId: number;
+  montant: number;
+  type: 'revenu' | 'depense';
+  description: string | null;
+  dateTransaction: Date;
+}
+
+/**
+ * Représente une transaction accompagnée du nom de sa catégorie, tel
+ * que renvoyé par GET /api/transactions (évite un aller-retour
+ * supplémentaire pour récupérer le nom de la catégorie).
+ */
+export interface ITransactionAvecCategorie extends ITransaction {
+  categorieNom: string;
+}
+
+/**
+ * Représente le solde total (revenus moins dépenses) d'un utilisateur.
+ */
+export interface ISolde {
+  solde: number;
+}

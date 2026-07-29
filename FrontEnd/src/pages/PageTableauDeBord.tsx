@@ -1,25 +1,45 @@
 import { useEffect, useState } from 'react';
 import { listerCategories, supprimerCategorie } from '../api/categories';
+import { listerTransactions, recupererSolde, supprimerTransaction } from '../api/transactions';
 import FormulaireCategorie from '../composantes/FormulaireCategorie';
+import FormulaireTransaction from '../composantes/FormulaireTransaction';
 import ListeCategories from '../composantes/ListeCategories';
-import type { ICategorie } from '../types';
+import ListeTransactions from '../composantes/ListeTransactions';
+import SoldeTotal from '../composantes/SoldeTotal';
+import type { ICategorie, ITransactionAvecCategorie } from '../types';
 
 /**
  * Page principale affichée une fois l'utilisateur connecté. Permet de
- * créer, modifier et supprimer ses catégories.
+ * créer, modifier et supprimer ses catégories et ses transactions, et
+ * affiche le solde total.
  */
 function PageTableauDeBord(): JSX.Element {
   const [categories, setCategories] = useState<ICategorie[]>([]);
   const [categorieAModifier, setCategorieAModifier] = useState<ICategorie | null>(null);
-  const [messageErreur, setMessageErreur] = useState<string>('');
+  const [messageErreurCategories, setMessageErreurCategories] = useState<string>('');
+
+  const [transactions, setTransactions] = useState<ITransactionAvecCategorie[]>([]);
+  const [transactionAModifier, setTransactionAModifier] = useState<ITransactionAvecCategorie | null>(null);
+  const [solde, setSolde] = useState<number>(0);
+  const [messageErreurTransactions, setMessageErreurTransactions] = useState<string>('');
 
   useEffect(() => {
     listerCategories()
       .then((categoriesRecues) => setCategories(categoriesRecues))
-      .catch(() => setMessageErreur('Erreur lors du chargement des catégories.'));
+      .catch(() => setMessageErreurCategories('Erreur lors du chargement des catégories.'));
   }, []);
 
-  function gererSucces(categorie: ICategorie): void {
+  useEffect(() => {
+    listerTransactions()
+      .then((transactionsRecues) => setTransactions(transactionsRecues))
+      .catch(() => setMessageErreurTransactions('Erreur lors du chargement des transactions.'));
+
+    recupererSolde()
+      .then((soldeRecu) => setSolde(soldeRecu.solde))
+      .catch(() => setMessageErreurTransactions('Erreur lors du chargement du solde.'));
+  }, []);
+
+  function gererSuccesCategorie(categorie: ICategorie): void {
     setCategorieAModifier(null);
 
     setCategories((categoriesActuelles) => {
@@ -35,26 +55,79 @@ function PageTableauDeBord(): JSX.Element {
     });
   }
 
-  async function gererSuppression(categorie: ICategorie): Promise<void> {
-    setMessageErreur('');
+  async function gererSuppressionCategorie(categorie: ICategorie): Promise<void> {
+    setMessageErreurCategories('');
 
     try {
       await supprimerCategorie(categorie.id);
       setCategories((categoriesActuelles) => categoriesActuelles.filter((c) => c.id !== categorie.id));
     } catch (erreur) {
-      setMessageErreur(erreur instanceof Error ? erreur.message : 'Erreur lors de la suppression.');
+      setMessageErreurCategories(erreur instanceof Error ? erreur.message : 'Erreur lors de la suppression.');
+    }
+  }
+
+  function gererSuccesTransaction(transaction: ITransactionAvecCategorie): void {
+    setTransactionAModifier(null);
+
+    setTransactions((transactionsActuelles) => {
+      const indexExistant = transactionsActuelles.findIndex((t) => t.id === transaction.id);
+
+      if (indexExistant === -1) {
+        return [...transactionsActuelles, transaction];
+      }
+
+      const transactionsMisesAJour = [...transactionsActuelles];
+      transactionsMisesAJour[indexExistant] = transaction;
+      return transactionsMisesAJour;
+    });
+
+    recupererSolde()
+      .then((soldeRecu) => setSolde(soldeRecu.solde))
+      .catch(() => setMessageErreurTransactions('Erreur lors de la mise à jour du solde.'));
+  }
+
+  async function gererSuppressionTransaction(transaction: ITransactionAvecCategorie): Promise<void> {
+    setMessageErreurTransactions('');
+
+    try {
+      await supprimerTransaction(transaction.id);
+      setTransactions((transactionsActuelles) =>
+        transactionsActuelles.filter((t) => t.id !== transaction.id)
+      );
+
+      const soldeRecu = await recupererSolde();
+      setSolde(soldeRecu.solde);
+    } catch (erreur) {
+      setMessageErreurTransactions(
+        erreur instanceof Error ? erreur.message : 'Erreur lors de la suppression.'
+      );
     }
   }
 
   return (
     <div>
+      <SoldeTotal solde={solde} />
+
       <h2>Mes catégories</h2>
-      <FormulaireCategorie categorieAModifier={categorieAModifier} auSucces={gererSucces} />
-      {messageErreur !== '' && <p>{messageErreur}</p>}
+      <FormulaireCategorie categorieAModifier={categorieAModifier} auSucces={gererSuccesCategorie} />
+      {messageErreurCategories !== '' && <p>{messageErreurCategories}</p>}
       <ListeCategories
         categories={categories}
         auClicModifier={setCategorieAModifier}
-        auClicSupprimer={gererSuppression}
+        auClicSupprimer={gererSuppressionCategorie}
+      />
+
+      <h2>Mes transactions</h2>
+      <FormulaireTransaction
+        categories={categories}
+        transactionAModifier={transactionAModifier}
+        auSucces={gererSuccesTransaction}
+      />
+      {messageErreurTransactions !== '' && <p>{messageErreurTransactions}</p>}
+      <ListeTransactions
+        transactions={transactions}
+        auClicModifier={setTransactionAModifier}
+        auClicSupprimer={gererSuppressionTransaction}
       />
     </div>
   );
