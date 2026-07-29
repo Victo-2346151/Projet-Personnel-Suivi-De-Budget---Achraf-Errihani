@@ -1,0 +1,32 @@
+{
+  "name": "backend",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Demo minimale pour l'audit jour 2 - backend Express/TypeScript",
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "lint": "eslint . --ext .ts",
+    "start": "node dist/server.js"
+  },
+  "dependencies": {
+    "bcrypt": "^6.0.0",
+    "cors": "^2.8.5",
+    "dotenv": "^17.4.2",
+    "express": "^4.19.2",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.23.2"
+  },
+  "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/express": "^4.17.21",
+    "@types/express-session": "^1.19.0",
+    "@types/node": "^20.14.0",
+    "@typescript-eslint/eslint-plugin": "^7.16.0",
+    "@typescript-eslint/parser": "^7.16.0",
+    "eslint": "^8.57.0",
+    "tsx": "^4.16.0",
+    "typescript": "^5.5.0"
+  }
+}
