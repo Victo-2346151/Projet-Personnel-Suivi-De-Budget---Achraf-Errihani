@@ -41,3 +41,40 @@ export async function appelApiPost<T>(cheminRelatif: string, corps?: unknown): P
 
   return reponse.json() as Promise<T>;
 }
+
+/**
+ * Effectue un appel PUT vers l'API backend avec un corps JSON et
+ * retourne les données JSON de la réponse. Inclut le cookie de
+ * session (credentials: 'include').
+ */
+export async function appelApiPut<T>(cheminRelatif: string, corps: unknown): Promise<T> {
+  const reponse = await fetch(`${URL_BASE_API}${cheminRelatif}`, {
+    method: 'PUT',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(corps),
+  });
+
+  if (!reponse.ok) {
+    const donneesErreur = (await reponse.json()) as { message?: string };
+    throw new Error(donneesErreur.message ?? `Erreur API: ${reponse.status}`);
+  }
+
+  return reponse.json() as Promise<T>;
+}
+
+/**
+ * Effectue un appel DELETE vers l'API backend. Inclut le cookie de
+ * session (credentials: 'include').
+ */
+export async function appelApiDelete(cheminRelatif: string): Promise<void> {
+  const reponse = await fetch(`${URL_BASE_API}${cheminRelatif}`, {
+    method: 'DELETE',
+    credentials: 'include',
+  });
+
+  if (!reponse.ok) {
+    const donneesErreur = (await reponse.json()) as { message?: string };
+    throw new Error(donneesErreur.message ?? `Erreur API: ${reponse.status}`);
+  }
+}

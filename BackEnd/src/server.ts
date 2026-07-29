@@ -4,6 +4,7 @@ import express, { Express } from 'express';
 import session from 'express-session';
 import routeurAuthentification from './routes/authentification';
 import routeurBonjour from './routes/bonjour';
+import routeurCategories from './routes/categories';
 
 const application: Express = express();
 const port = process.env.PORT ?? 3000;
@@ -26,6 +27,7 @@ application.use(
 
 application.use('/api', routeurBonjour);
 application.use('/api', routeurAuthentification);
+application.use('/api', routeurCategories);
 
 application.listen(port, () => {
   console.log(`Serveur demarre sur le port ${port}`);
