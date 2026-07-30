@@ -149,6 +149,11 @@ routeurTransactions.post('/transactions', async (requete, reponse) => {
     return;
   }
 
+  if (montant <= 0) {
+    reponse.status(400).json({ message: 'Le montant doit être supérieur à zéro.' });
+    return;
+  }
+
   try {
     const messageErreurCategorie = await validerCategorie(categorieId, requete.session.utilisateurId, type);
 
@@ -201,6 +206,11 @@ routeurTransactions.put('/transactions/:id', async (requete, reponse) => {
 
   if (type !== 'revenu' && type !== 'depense') {
     reponse.status(400).json({ message: "Le type doit être 'revenu' ou 'depense'." });
+    return;
+  }
+
+  if (montant <= 0) {
+    reponse.status(400).json({ message: 'Le montant doit être supérieur à zéro.' });
     return;
   }
 

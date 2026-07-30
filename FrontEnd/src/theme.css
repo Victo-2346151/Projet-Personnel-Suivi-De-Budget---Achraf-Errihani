@@ -1,0 +1,576 @@
+/* Système de design "Nocturne" — tokens clair/sombre et classes de composants. */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+  --police-titre: 'Inter', system-ui, sans-serif;
+  --police-corps: 'Inter', system-ui, sans-serif;
+  --poids-titre: 500;
+
+  --espace-1: 2.8px;
+  --espace-2: 5.6px;
+  --espace-3: 8.4px;
+  --espace-4: 11.2px;
+  --espace-6: 16.8px;
+  --espace-8: 22.4px;
+
+  --rayon-sm: 4px;
+  --rayon-md: 8px;
+  --rayon-lg: 14px;
+}
+
+:root,
+:root[data-theme='sombre'] {
+  color-scheme: dark;
+
+  --couleur-fond: #161826;
+  --couleur-surface: #232532;
+  --couleur-surface-2: #2b2e40;
+  --couleur-texte: #e9e9ed;
+  --couleur-texte-attenue: color-mix(in srgb, #e9e9ed 55%, transparent);
+  --couleur-bordure: color-mix(in srgb, #e9e9ed 16%, transparent);
+
+  --couleur-accent: #9184d9;
+  --couleur-accent-100: #f5f4ff;
+  --couleur-accent-300: #d2cefd;
+  --couleur-accent-700: #5d5294;
+  --couleur-accent-800: #423a6a;
+
+  --couleur-neutre-100: #f3f5fe;
+  --couleur-neutre-200: #e4e7f5;
+  --couleur-neutre-700: #595d6c;
+  --couleur-neutre-800: #3f424d;
+
+  --couleur-montant-revenu: var(--couleur-accent-300);
+  --couleur-montant-depense: var(--couleur-texte);
+  --couleur-solde-positif: #7bd9a5;
+  --couleur-solde-negatif: #f28b8b;
+
+  --etiquette-accent-fond: var(--couleur-accent-800);
+  --etiquette-accent-texte: var(--couleur-accent-100);
+  --etiquette-neutre-fond: var(--couleur-neutre-800);
+  --etiquette-neutre-texte: var(--couleur-neutre-100);
+
+  --ombre-legere: 0 0 0 1px #3f424d;
+  --ombre-moyenne: 0 0 0 1px #595d6c, 0 6px 18px rgba(0, 0, 0, 0.55);
+  --ombre-forte: 0 0 0 1px #9397ab, 0 16px 40px rgba(0, 0, 0, 0.65);
+}
+
+:root[data-theme='clair'] {
+  color-scheme: light;
+
+  --couleur-fond: #f1f2f9;
+  --couleur-surface: #ffffff;
+  --couleur-surface-2: #eceef7;
+  --couleur-texte: #1b1d29;
+  --couleur-texte-attenue: color-mix(in srgb, #1b1d29 55%, transparent);
+  --couleur-bordure: color-mix(in srgb, #1b1d29 14%, transparent);
+
+  --couleur-accent: #6c5fc7;
+  --couleur-accent-100: #efedfd;
+  --couleur-accent-300: #a99cf0;
+  --couleur-accent-700: #453b8c;
+  --couleur-accent-800: #322a68;
+
+  --couleur-neutre-100: #f5f6fb;
+  --couleur-neutre-200: #e7e9f2;
+  --couleur-neutre-700: #6b6f80;
+  --couleur-neutre-800: #dfe1ec;
+
+  --couleur-montant-revenu: var(--couleur-accent);
+  --couleur-montant-depense: var(--couleur-texte);
+  --couleur-solde-positif: #2f8a54;
+  --couleur-solde-negatif: #c94444;
+
+  --etiquette-accent-fond: var(--couleur-accent-100);
+  --etiquette-accent-texte: var(--couleur-accent-700);
+  --etiquette-neutre-fond: var(--couleur-neutre-200);
+  --etiquette-neutre-texte: var(--couleur-neutre-700);
+
+  --ombre-legere: 0 0 0 1px #dfe1ec;
+  --ombre-moyenne: 0 0 0 1px #cfd2e0, 0 6px 18px rgba(30, 32, 60, 0.08);
+  --ombre-forte: 0 0 0 1px #c3c6d8, 0 16px 40px rgba(30, 32, 60, 0.14);
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background-color: var(--couleur-fond);
+  color: var(--couleur-texte);
+  font-family: var(--police-corps);
+  font-size: 15px;
+  line-height: 1.55;
+  transition: background-color 0.15s ease, color 0.15s ease;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-family: var(--police-titre);
+  font-weight: var(--poids-titre);
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  margin: 0 0 var(--espace-2);
+}
+
+h1 {
+  font-size: 32px;
+}
+h2 {
+  font-size: 22px;
+}
+
+p {
+  margin: 0 0 var(--espace-3);
+}
+
+.texte-attenue {
+  color: var(--couleur-texte-attenue);
+}
+
+:focus-visible {
+  outline: 2px solid var(--couleur-accent);
+  outline-offset: 2px;
+}
+
+/* Conteneurs */
+.conteneur-page {
+  min-height: 100vh;
+  background-color: var(--couleur-fond);
+}
+
+.conteneur-tableau-de-bord {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: var(--espace-8) var(--espace-6);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-6);
+}
+
+/* Navigation */
+.barre-navigation {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-4);
+  padding: var(--espace-3) var(--espace-6);
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.marque-nav {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--police-titre);
+  font-weight: var(--poids-titre);
+  font-size: 18px;
+  color: var(--couleur-accent);
+  margin-right: auto;
+}
+
+.marque-nav span {
+  color: var(--couleur-texte);
+}
+
+.info-utilisateur {
+  display: flex;
+  align-items: center;
+  gap: var(--espace-4);
+  font-size: 14px;
+}
+
+/* Boutons */
+.bouton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+  font-family: var(--police-titre);
+  font-weight: var(--poids-titre);
+  font-size: 14px;
+  color: var(--couleur-texte);
+  background: transparent;
+  border: 1px solid transparent;
+  padding: var(--espace-2) calc(var(--espace-3) * 1.2);
+  border-radius: var(--rayon-md);
+  transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.bouton:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.bouton-primaire {
+  color: var(--couleur-accent);
+  border-color: var(--couleur-accent);
+}
+.bouton-primaire:hover {
+  background: color-mix(in srgb, var(--couleur-accent) 12%, transparent);
+}
+
+.bouton-secondaire {
+  border-color: var(--couleur-bordure);
+}
+.bouton-secondaire:hover {
+  background: color-mix(in srgb, var(--couleur-texte) 7%, transparent);
+}
+
+.bouton-fantome {
+  color: var(--couleur-accent);
+  padding-inline: var(--espace-1);
+}
+.bouton-fantome:hover {
+  background: color-mix(in srgb, var(--couleur-accent) 10%, transparent);
+}
+
+.bouton-icone {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
+.bouton-pleine-largeur {
+  width: 100%;
+  margin-top: var(--espace-2);
+}
+
+/* Cartes */
+.carte {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-2);
+  padding: var(--espace-4);
+  border-radius: var(--rayon-md);
+  background: var(--couleur-surface);
+}
+
+.carte-ombre-legere {
+  box-shadow: var(--ombre-legere);
+}
+.carte-ombre-moyenne {
+  box-shadow: var(--ombre-moyenne);
+}
+.carte-ombre-forte {
+  box-shadow: var(--ombre-forte);
+}
+
+.carte-accroche {
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--couleur-accent);
+}
+
+.carte-titre {
+  font-family: var(--police-titre);
+  font-weight: var(--poids-titre);
+  font-size: 16px;
+  line-height: 1.2;
+}
+
+.carte-texte {
+  margin: 0;
+  font-size: 13px;
+  opacity: 0.8;
+}
+
+.carte-meta {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--couleur-texte-attenue);
+}
+
+.carte-valeur {
+  font-family: var(--police-titre);
+  font-size: 28px;
+  font-weight: 500;
+}
+
+/* Formulaires */
+.champ-formulaire {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  margin-bottom: 0;
+}
+
+.champ-formulaire label {
+  font-size: 12px;
+  color: var(--couleur-texte-attenue);
+  font-weight: 500;
+}
+
+.champ-formulaire input,
+.champ-formulaire select {
+  min-height: 36px;
+  padding: 6px 10px;
+  font: inherit;
+  font-size: 14px;
+  color: var(--couleur-texte);
+  background: var(--couleur-surface-2);
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-md);
+}
+
+.champ-formulaire input:focus-visible,
+.champ-formulaire select:focus-visible {
+  border-color: var(--couleur-accent);
+  outline-offset: 0;
+}
+
+.grille-deux-colonnes {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: var(--espace-3);
+}
+
+/* Contrôle segmenté (type revenu/dépense) */
+.segmente {
+  display: inline-flex;
+  overflow: hidden;
+  border: 1px solid var(--couleur-bordure);
+  border-radius: var(--rayon-md);
+  width: fit-content;
+}
+
+.segmente-option {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 14px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.segmente-option + .segmente-option {
+  border-left: 1px solid var(--couleur-bordure);
+}
+
+.segmente-option input {
+  position: absolute;
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.segmente-option:has(input:checked) {
+  color: var(--couleur-accent);
+  box-shadow: inset 0 0 0 1px var(--couleur-accent);
+}
+
+.segmente-option:not(:has(input:checked)):hover {
+  background: color-mix(in srgb, var(--couleur-texte) 7%, transparent);
+}
+
+/* Étiquettes */
+.etiquette {
+  display: inline-flex;
+  align-items: center;
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  padding: 3px 10px;
+  border-radius: 6px;
+  width: fit-content;
+}
+
+.etiquette-accent {
+  background: var(--etiquette-accent-fond);
+  color: var(--etiquette-accent-texte);
+}
+.etiquette-neutre {
+  background: var(--etiquette-neutre-fond);
+  color: var(--etiquette-neutre-texte);
+}
+
+/* Message d'erreur */
+.message-erreur {
+  color: var(--couleur-solde-negatif);
+  background: color-mix(in srgb, var(--couleur-solde-negatif) 14%, transparent);
+  border-radius: var(--rayon-md);
+  padding: 8px 12px;
+  font-size: 13px;
+}
+
+/* Tableau (transactions) */
+.tableau {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.tableau th {
+  text-align: left;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--couleur-texte-attenue);
+  padding: var(--espace-2);
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.tableau td {
+  padding: var(--espace-2);
+  border-bottom: 1px solid var(--couleur-bordure);
+}
+
+.tableau tbody tr:hover {
+  background: color-mix(in srgb, var(--couleur-texte) 4%, transparent);
+}
+
+.actions-ligne {
+  display: flex;
+  gap: 2px;
+  justify-content: flex-end;
+}
+
+/* Grilles du tableau de bord */
+.grille-stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--espace-4);
+}
+
+.grille-tableau-bord {
+  display: grid;
+  grid-template-columns: 1fr 1.3fr;
+  gap: var(--espace-6);
+  align-items: start;
+}
+
+.section-colonne {
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-3);
+}
+
+.entete-section {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.entete-section h2 {
+  margin: 0;
+}
+
+/* Graphique de répartition */
+.barre-graphique-fond {
+  height: 8px;
+  border-radius: 4px;
+  background: var(--etiquette-neutre-fond);
+  overflow: hidden;
+}
+
+.barre-graphique-remplissage {
+  height: 100%;
+  border-radius: 4px;
+  background: var(--couleur-accent);
+}
+
+/* État vide */
+.etat-vide {
+  align-items: flex-start;
+  color: var(--couleur-accent);
+}
+
+.etat-vide .carte-titre {
+  color: var(--couleur-texte);
+}
+
+/* Authentification */
+.page-authentification {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--espace-8);
+  background-color: var(--couleur-fond);
+}
+
+.conteneur-auth {
+  width: min(400px, 100%);
+  display: flex;
+  flex-direction: column;
+  gap: var(--espace-6);
+}
+
+.marque-auth {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  color: var(--couleur-accent);
+}
+
+.marque-auth span {
+  font-family: var(--police-titre);
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--couleur-texte);
+}
+
+.carte-auth {
+  padding: var(--espace-6);
+  gap: var(--espace-4);
+}
+.carte-auth h1 {
+  font-size: 26px;
+}
+.carte-auth .sous-titre {
+  margin: 0;
+  font-size: 13px;
+}
+.bascule-auth {
+  margin: 0;
+  font-size: 13px;
+  text-align: center;
+}
+
+/* Bascule de thème */
+.bouton-theme {
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  border-radius: var(--rayon-md);
+  border: 1px solid var(--couleur-bordure);
+  background: transparent;
+  color: var(--couleur-texte);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bouton-theme:hover {
+  background: color-mix(in srgb, var(--couleur-texte) 7%, transparent);
+}
+
+.bouton-theme-flottant {
+  position: fixed;
+  top: var(--espace-4);
+  right: var(--espace-4);
+  z-index: 10;
+}
+
+@media (max-width: 860px) {
+  .grille-stats {
+    grid-template-columns: 1fr;
+  }
+  .grille-tableau-bord {
+    grid-template-columns: 1fr;
+  }
+  .grille-deux-colonnes {
+    grid-template-columns: 1fr;
+  }
+}

@@ -20,6 +20,10 @@ interface ErreurMySQL extends Error {
   code: string;
 }
 
+interface LigneTransactionExistence extends RowDataPacket {
+  id: number;
+}
+
 /**
  * Vérifie si une erreur correspond à une violation de contrainte de clé
  * étrangère (ex: suppression d'une catégorie encore référencée par des
@@ -122,13 +126,30 @@ routeurCategories.put('/categories/:id', async (requete, reponse) => {
 
   try {
     const [lignesExistantes] = await bd.query<LigneCategorie[]>(
-      'SELECT id FROM categories WHERE id = ? AND utilisateurId = ?',
+      'SELECT id, type FROM categories WHERE id = ? AND utilisateurId = ?',
       [idCategorie, requete.session.utilisateurId]
     );
 
-    if (lignesExistantes.length === 0) {
+    const categorieExistante = lignesExistantes[0];
+
+    if (categorieExistante === undefined) {
       reponse.status(404).json({ message: 'Catégorie introuvable.' });
       return;
+    }
+
+    if (categorieExistante.type !== type) {
+      const [lignesTransactions] = await bd.query<LigneTransactionExistence[]>(
+        'SELECT id FROM transactions WHERE categorieId = ? LIMIT 1',
+        [idCategorie]
+      );
+
+      if (lignesTransactions.length > 0) {
+        reponse.status(400).json({
+          message:
+            'Impossible de changer le type de cette catégorie : des transactions y sont déjà liées. Seuls le nom et le budget limite peuvent être modifiés.',
+        });
+        return;
+      }
     }
 
     await bd.query('UPDATE categories SET nom = ?, type = ?, budgetLimite = ? WHERE id = ?', [

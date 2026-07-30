@@ -35,7 +35,7 @@ function FormulaireInscription({ auSucces }: IPropsFormulaireInscription): JSX.E
 
   return (
     <form onSubmit={gererEnvoi}>
-      <div>
+      <div className="champ-formulaire">
         <label htmlFor="nom">Nom</label>
         <input
           id="nom"
@@ -44,7 +44,7 @@ function FormulaireInscription({ auSucces }: IPropsFormulaireInscription): JSX.E
           onChange={(evenement) => setNom(evenement.target.value)}
         />
       </div>
-      <div>
+      <div className="champ-formulaire">
         <label htmlFor="courriel">Courriel</label>
         <input
           id="courriel"
@@ -53,7 +53,7 @@ function FormulaireInscription({ auSucces }: IPropsFormulaireInscription): JSX.E
           onChange={(evenement) => setCourriel(evenement.target.value)}
         />
       </div>
-      <div>
+      <div className="champ-formulaire">
         <label htmlFor="motDePasse">Mot de passe</label>
         <input
           id="motDePasse"
@@ -62,8 +62,10 @@ function FormulaireInscription({ auSucces }: IPropsFormulaireInscription): JSX.E
           onChange={(evenement) => setMotDePasse(evenement.target.value)}
         />
       </div>
-      {messageErreur !== '' && <p>{messageErreur}</p>}
-      <button type="submit">S&apos;inscrire</button>
+      {messageErreur !== '' && <p className="message-erreur">{messageErreur}</p>}
+      <button type="submit" className="bouton bouton-primaire bouton-pleine-largeur">
+        S&apos;inscrire
+      </button>
     </form>
   );
 }

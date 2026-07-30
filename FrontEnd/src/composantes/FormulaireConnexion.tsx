@@ -34,7 +34,7 @@ function FormulaireConnexion({ auSucces }: IPropsFormulaireConnexion): JSX.Eleme
 
   return (
     <form onSubmit={gererEnvoi}>
-      <div>
+      <div className="champ-formulaire">
         <label htmlFor="courriel">Courriel</label>
         <input
           id="courriel"
@@ -43,7 +43,7 @@ function FormulaireConnexion({ auSucces }: IPropsFormulaireConnexion): JSX.Eleme
           onChange={(evenement) => setCourriel(evenement.target.value)}
         />
       </div>
-      <div>
+      <div className="champ-formulaire">
         <label htmlFor="motDePasse">Mot de passe</label>
         <input
           id="motDePasse"
@@ -52,8 +52,10 @@ function FormulaireConnexion({ auSucces }: IPropsFormulaireConnexion): JSX.Eleme
           onChange={(evenement) => setMotDePasse(evenement.target.value)}
         />
       </div>
-      {messageErreur !== '' && <p>{messageErreur}</p>}
-      <button type="submit">Se connecter</button>
+      {messageErreur !== '' && <p className="message-erreur">{messageErreur}</p>}
+      <button type="submit" className="bouton bouton-primaire bouton-pleine-largeur">
+        Se connecter
+      </button>
     </form>
   );
 }
