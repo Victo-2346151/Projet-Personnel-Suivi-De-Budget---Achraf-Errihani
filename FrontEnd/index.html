@@ -5,6 +5,18 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Suivi de Budget </title>
+  <script>
+    (function () {
+      var themeStocke = localStorage.getItem('suiviBudget.theme');
+      var theme =
+        themeStocke === 'sombre' || themeStocke === 'clair'
+          ? themeStocke
+          : window.matchMedia('(prefers-color-scheme: light)').matches
+            ? 'clair'
+            : 'sombre';
+      document.documentElement.setAttribute('data-theme', theme);
+    })();
+  </script>
 </head>
 
 <body>
