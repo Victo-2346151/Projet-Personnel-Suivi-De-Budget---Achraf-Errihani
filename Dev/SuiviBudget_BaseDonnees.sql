@@ -1,12 +1,14 @@
 -- ============================================================
 -- Script de creation de la base de donnees : suiviBudget
 -- Projet personnel - Suivi de depenses personnelles + budget
+-- Auteur : Achraf Errihani / 2346151 
+-- Date de creation : 27/07/2026
 -- ============================================================
 
 -- Creation de la base de donnees 
 CREATE DATABASE IF NOT EXISTS suiviBudget;
 
--- Selection de la base de donnees a utiliser pour la suite du script
+-- Selection de la base de donnees
 USE suiviBudget;
 
 -- ------------------------------------------------------------
@@ -14,11 +16,11 @@ USE suiviBudget;
 -- Contient les comptes des utilisateurs de l'application
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS utilisateurs (
-  id INT AUTO_INCREMENT PRIMARY KEY,          -- identifiant unique de l'utilisateur
-  nom VARCHAR(100) NOT NULL,                  -- nom complet de l'utilisateur
-  courriel VARCHAR(150) NOT NULL UNIQUE,      -- courriel, doit etre unique (sert a la connexion)
-  motDePasse VARCHAR(255) NOT NULL,           -- mot de passe hache 
-  dateCreation DATETIME DEFAULT CURRENT_TIMESTAMP  -- date de creation du compte
+  id INT AUTO_INCREMENT PRIMARY KEY,         
+  nom VARCHAR(100) NOT NULL,                  
+  courriel VARCHAR(150) NOT NULL UNIQUE,     
+  motDePasse VARCHAR(255) NOT NULL,           
+  dateCreation DATETIME DEFAULT CURRENT_TIMESTAMP  
 );
 
 -- ------------------------------------------------------------
@@ -26,11 +28,11 @@ CREATE TABLE IF NOT EXISTS utilisateurs (
 -- Contient les categories de revenus/depenses creees par chaque utilisateur
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS categories (
-  id INT AUTO_INCREMENT PRIMARY KEY,          -- identifiant unique de la categorie
-  utilisateurId INT NOT NULL,                 -- reference vers le proprietaire de la categorie
-  nom VARCHAR(50) NOT NULL,                   -- nom de la categorie (ex: Epicerie, Transport)
-  type ENUM('revenu', 'depense') NOT NULL,    -- indique si la categorie sert aux revenus ou aux depenses
-  budgetLimite DECIMAL(10, 2) DEFAULT NULL,   -- limite de budget
+  id INT AUTO_INCREMENT PRIMARY KEY,          
+  utilisateurId INT NOT NULL,                 
+  nom VARCHAR(50) NOT NULL,                   
+  type ENUM('revenu', 'depense') NOT NULL,   
+  budgetLimite DECIMAL(10, 2) DEFAULT NULL,   
   -- Si l'utilisateur est supprime, ses categories le sont aussi
   CONSTRAINT fkCategoriesUtilisateur
     FOREIGN KEY (utilisateurId) REFERENCES utilisateurs(id)
@@ -42,13 +44,13 @@ CREATE TABLE IF NOT EXISTS categories (
 -- Contient chaque revenu ou depense enregistre par un utilisateur
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS transactions (
-  id INT AUTO_INCREMENT PRIMARY KEY,          -- identifiant unique de la transaction
-  utilisateurId INT NOT NULL,                 -- reference vers le proprietaire de la transaction
-  categorieId INT NOT NULL,                   -- reference vers la categorie associee
-  montant DECIMAL(10, 2) NOT NULL,            -- montant de la transaction (toujours positif)
-  type ENUM('revenu', 'depense') NOT NULL,    -- indique si c'est un revenu ou une depense
-  description VARCHAR(255),                   -- description libre de la transaction
-  dateTransaction DATE NOT NULL,               -- date a laquelle la transaction a eu lieu
+  id INT AUTO_INCREMENT PRIMARY KEY,          
+  utilisateurId INT NOT NULL,                 
+  categorieId INT NOT NULL,                   
+  montant DECIMAL(10, 2) NOT NULL,            
+  type ENUM('revenu', 'depense') NOT NULL,    
+  description VARCHAR(255),                   
+  dateTransaction DATE NOT NULL,               
 
   -- Si l'utilisateur est supprime, ses transactions le sont aussi
   CONSTRAINT fkTransactionsUtilisateur
@@ -64,17 +66,16 @@ CREATE TABLE IF NOT EXISTS transactions (
 
 -- ------------------------------------------------------------
 -- Table dettes
--- Contient les dettes personnelles de chaque utilisateur (argent
--- qu'il doit a quelqu'un, ou qu'on lui doit)
+-- Contient les dettes personnelles
 -- ------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS dettes (
-  id INT AUTO_INCREMENT PRIMARY KEY,          -- identifiant unique de la dette
-  utilisateurId INT NOT NULL,                 -- reference vers le proprietaire
-  personne VARCHAR(100) NOT NULL,             -- nom de la personne concernee
-  montant DECIMAL(10, 2) NOT NULL,            -- montant de la dette (toujours positif)
-  direction ENUM('je_dois', 'on_me_doit') NOT NULL,  -- sens de la dette
-  description VARCHAR(255),                   -- description libre (optionnel)
-  dateCreation DATE NOT NULL,                 -- date a laquelle la dette a ete creee
+  id INT AUTO_INCREMENT PRIMARY KEY,          
+  utilisateurId INT NOT NULL,                
+  personne VARCHAR(100) NOT NULL,             
+  montant DECIMAL(10, 2) NOT NULL,            
+  direction ENUM('je_dois', 'on_me_doit') NOT NULL,  
+  description VARCHAR(255),            
+  dateCreation DATE NOT NULL,               
   statut ENUM('Réglée', 'Non réglée') NOT NULL DEFAULT 'Non réglée',
 
   -- Si l'utilisateur est supprime, ses dettes le sont aussi
