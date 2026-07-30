@@ -1,14 +1,18 @@
 import { useEffect, useState } from 'react';
 import { listerCategories, supprimerCategorie } from '../api/categories';
+import { changerStatutDette, listerDettes, recupererResumeDettes, supprimerDette } from '../api/dettes';
 import { listerTransactions, recupererSolde, supprimerTransaction } from '../api/transactions';
 import CartesStatistiques from '../composantes/CartesStatistiques';
 import FormulaireCategorie from '../composantes/FormulaireCategorie';
+import FormulaireDette from '../composantes/FormulaireDette';
 import FormulaireTransaction from '../composantes/FormulaireTransaction';
 import GraphiqueDepenses from '../composantes/GraphiqueDepenses';
 import { IconePlus } from '../composantes/Icones';
 import ListeCategories from '../composantes/ListeCategories';
+import ListeDettes from '../composantes/ListeDettes';
 import ListeTransactions from '../composantes/ListeTransactions';
-import type { ICategorie, ITransactionAvecCategorie } from '../types';
+import ResumeDettes from '../composantes/ResumeDettes';
+import type { ICategorie, IDette, ITransactionAvecCategorie } from '../types';
 
 /**
  * Page principale affichée une fois l'utilisateur connecté. Permet de
@@ -27,6 +31,13 @@ function PageTableauDeBord(): JSX.Element {
   const [solde, setSolde] = useState<number>(0);
   const [messageErreurTransactions, setMessageErreurTransactions] = useState<string>('');
 
+  const [dettes, setDettes] = useState<IDette[]>([]);
+  const [detteAModifier, setDetteAModifier] = useState<IDette | null>(null);
+  const [formDetteOuvert, setFormDetteOuvert] = useState<boolean>(false);
+  const [totalJeDois, setTotalJeDois] = useState<number>(0);
+  const [totalOnMeDoit, setTotalOnMeDoit] = useState<number>(0);
+  const [messageErreurDettes, setMessageErreurDettes] = useState<string>('');
+
   useEffect(() => {
     listerCategories()
       .then((categoriesRecues) => setCategories(categoriesRecues))
@@ -41,6 +52,19 @@ function PageTableauDeBord(): JSX.Element {
     recupererSolde()
       .then((soldeRecu) => setSolde(soldeRecu.solde))
       .catch(() => setMessageErreurTransactions('Erreur lors du chargement du solde.'));
+  }, []);
+
+  useEffect(() => {
+    listerDettes()
+      .then((dettesRecues) => setDettes(dettesRecues))
+      .catch(() => setMessageErreurDettes('Erreur lors du chargement des dettes.'));
+
+    recupererResumeDettes()
+      .then((resume) => {
+        setTotalJeDois(resume.totalJeDois);
+        setTotalOnMeDoit(resume.totalOnMeDoit);
+      })
+      .catch(() => setMessageErreurDettes('Erreur lors du chargement du résumé des dettes.'));
   }, []);
 
   function ouvrirNouvelleCategorie(): void {
@@ -130,6 +154,75 @@ function PageTableauDeBord(): JSX.Element {
     }
   }
 
+  function ouvrirNouvelleDette(): void {
+    setDetteAModifier(null);
+    setFormDetteOuvert(true);
+  }
+
+  function ouvrirModificationDette(dette: IDette): void {
+    setDetteAModifier(dette);
+    setFormDetteOuvert(true);
+  }
+
+  function rafraichirResumeDettes(): void {
+    recupererResumeDettes()
+      .then((resume) => {
+        setTotalJeDois(resume.totalJeDois);
+        setTotalOnMeDoit(resume.totalOnMeDoit);
+      })
+      .catch(() => setMessageErreurDettes('Erreur lors de la mise à jour du résumé des dettes.'));
+  }
+
+  function gererSuccesDette(dette: IDette): void {
+    setFormDetteOuvert(false);
+    setDetteAModifier(null);
+
+    setDettes((dettesActuelles) => {
+      const indexExistant = dettesActuelles.findIndex((d) => d.id === dette.id);
+
+      if (indexExistant === -1) {
+        return [...dettesActuelles, dette];
+      }
+
+      const dettesMisesAJour = [...dettesActuelles];
+      dettesMisesAJour[indexExistant] = dette;
+      return dettesMisesAJour;
+    });
+
+    rafraichirResumeDettes();
+  }
+
+  async function gererSuppressionDette(dette: IDette): Promise<void> {
+    setMessageErreurDettes('');
+
+    try {
+      await supprimerDette(dette.id);
+      setDettes((dettesActuelles) => dettesActuelles.filter((d) => d.id !== dette.id));
+      rafraichirResumeDettes();
+    } catch (erreur) {
+      setMessageErreurDettes(erreur instanceof Error ? erreur.message : 'Erreur lors de la suppression.');
+    }
+  }
+
+  async function gererBasculeStatutDette(dette: IDette): Promise<void> {
+    setMessageErreurDettes('');
+
+    try {
+      const nouveauStatut = dette.statut === 'Réglée' ? 'Non réglée' : 'Réglée';
+      const detteMiseAJour = await changerStatutDette(dette.id, nouveauStatut);
+
+      setDettes((dettesActuelles) =>
+        dettesActuelles.map((d) => (d.id === detteMiseAJour.id ? detteMiseAJour : d))
+      );
+
+      rafraichirResumeDettes();
+    } catch (erreur) {
+      setMessageErreurDettes(
+        erreur instanceof Error ? erreur.message : 'Erreur lors du changement de statut.'
+      );
+    }
+  }
+
   const totalRevenus = transactions
     .filter((transaction) => transaction.type === 'revenu')
     .reduce((total, transaction) => total + transaction.montant, 0);
@@ -214,6 +307,36 @@ function PageTableauDeBord(): JSX.Element {
             auClicNouvelle={ouvrirNouvelleTransaction}
           />
         </div>
+      </div>
+
+      <div className="section-colonne">
+        <div className="entete-section">
+          <h2>Mes dettes</h2>
+          <button type="button" className="bouton bouton-primaire" onClick={ouvrirNouvelleDette}>
+            <IconePlus />
+            Nouvelle
+          </button>
+        </div>
+
+        <ResumeDettes totalJeDois={totalJeDois} totalOnMeDoit={totalOnMeDoit} />
+
+        {formDetteOuvert && (
+          <FormulaireDette
+            detteAModifier={detteAModifier}
+            auSucces={gererSuccesDette}
+            auAnnuler={() => setFormDetteOuvert(false)}
+          />
+        )}
+
+        {messageErreurDettes !== '' && <p className="message-erreur">{messageErreurDettes}</p>}
+
+        <ListeDettes
+          dettes={dettes}
+          auClicModifier={ouvrirModificationDette}
+          auClicSupprimer={gererSuppressionDette}
+          auClicBasculerStatut={gererBasculeStatutDette}
+          auClicNouvelle={ouvrirNouvelleDette}
+        />
       </div>
     </>
   );

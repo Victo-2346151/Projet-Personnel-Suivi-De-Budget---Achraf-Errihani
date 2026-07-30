@@ -62,3 +62,26 @@ export interface ITransactionAvecCategorie extends ITransaction {
 export interface ISolde {
   solde: number;
 }
+
+/**
+ * Représente une dette personnelle : de l'argent que l'utilisateur
+ * doit à quelqu'un, ou que quelqu'un lui doit.
+ */
+export interface IDette {
+  id: number;
+  utilisateurId: number;
+  personne: string;
+  montant: number;
+  direction: 'je_dois' | 'on_me_doit';
+  description: string | null;
+  dateCreation: Date;
+  statut: 'Réglée' | 'Non réglée';
+}
+
+/**
+ * Représente le résumé des dettes non réglées d'un utilisateur.
+ */
+export interface IResumeDettes {
+  totalJeDois: number;
+  totalOnMeDoit: number;
+}

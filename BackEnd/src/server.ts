@@ -5,6 +5,7 @@ import session from 'express-session';
 import routeurAuthentification from './routes/authentification';
 import routeurBonjour from './routes/bonjour';
 import routeurCategories from './routes/categories';
+import routeurDettes from './routes/dettes';
 import routeurTransactions from './routes/transactions';
 
 const application: Express = express();
@@ -29,6 +30,7 @@ application.use(
 application.use('/api', routeurBonjour);
 application.use('/api', routeurAuthentification);
 application.use('/api', routeurCategories);
+application.use('/api', routeurDettes);
 application.use('/api', routeurTransactions);
 
 application.listen(port, () => {
