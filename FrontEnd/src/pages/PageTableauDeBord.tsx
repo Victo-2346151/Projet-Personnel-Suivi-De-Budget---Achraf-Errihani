@@ -209,11 +209,12 @@ function PageTableauDeBord(): JSX.Element {
 
     try {
       const nouveauStatut = dette.statut === 'Réglée' ? 'Non réglée' : 'Réglée';
-      const detteMiseAJour = await changerStatutDette(dette.id, nouveauStatut);
+      await changerStatutDette(dette.id, nouveauStatut);
 
-      setDettes((dettesActuelles) =>
-        dettesActuelles.map((d) => (d.id === detteMiseAJour.id ? detteMiseAJour : d))
-      );
+      // On recharge la liste complète plutôt que de modifier la dette en
+      // place, pour que l'ordre (non réglées d'abord) reste correct.
+      const dettesRecues = await listerDettes();
+      setDettes(dettesRecues);
 
       rafraichirResumeDettes();
     } catch (erreur) {
