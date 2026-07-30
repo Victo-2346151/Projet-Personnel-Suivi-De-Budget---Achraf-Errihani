@@ -1,5 +1,5 @@
 import { formaterMontant } from '../utils/formatage';
-import { IconePortefeuille, IconeTendanceBaisse, IconeTendanceHausse } from './Icones';
+import { IconePortefeuille, IconeRecu, IconeTendanceBaisse, IconeTendanceHausse } from './Icones';
 
 interface IPropsCartesStatistiques {
   solde: number;
@@ -7,12 +7,14 @@ interface IPropsCartesStatistiques {
   totalDepenses: number;
   nbTransactionsRevenu: number;
   nbTransactionsDepense: number;
+  totalJeDois: number;
+  totalOnMeDoit: number;
 }
 
 /**
- * Affiche les trois cartes statistiques du tableau de bord : solde
+ * Affiche les quatre cartes statistiques du tableau de bord : solde
  * total (vert s'il est positif ou nul, rouge s'il est négatif),
- * revenus et dépenses.
+ * revenus, dépenses et solde des dettes.
  */
 function CartesStatistiques({
   solde,
@@ -20,8 +22,13 @@ function CartesStatistiques({
   totalDepenses,
   nbTransactionsRevenu,
   nbTransactionsDepense,
+  totalJeDois,
+  totalOnMeDoit,
 }: IPropsCartesStatistiques): JSX.Element {
   const couleurSolde = solde >= 0 ? 'var(--couleur-solde-positif)' : 'var(--couleur-solde-negatif)';
+  const soldeDettes = totalOnMeDoit - totalJeDois;
+  const couleurSoldeDettes =
+    soldeDettes >= 0 ? 'var(--couleur-solde-positif)' : 'var(--couleur-solde-negatif)';
 
   return (
     <div className="grille-stats">
@@ -53,6 +60,17 @@ function CartesStatistiques({
         <span className="carte-meta">
           <IconeTendanceBaisse />
           {nbTransactionsDepense} transaction{nbTransactionsDepense > 1 ? 's' : ''}
+        </span>
+      </div>
+
+      <div className="carte carte-ombre-legere">
+        <span className="carte-accroche">Solde des dettes</span>
+        <span className="carte-valeur" style={{ color: couleurSoldeDettes }}>
+          {formaterMontant(soldeDettes)}
+        </span>
+        <span className="carte-meta">
+          <IconeRecu taille={14} />
+          Ce qu&apos;on vous doit moins ce que vous devez
         </span>
       </div>
     </div>
