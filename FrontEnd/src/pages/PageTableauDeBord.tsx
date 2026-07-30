@@ -242,6 +242,8 @@ function PageTableauDeBord(): JSX.Element {
         totalDepenses={totalDepenses}
         nbTransactionsRevenu={nbTransactionsRevenu}
         nbTransactionsDepense={nbTransactionsDepense}
+        totalJeDois={totalJeDois}
+        totalOnMeDoit={totalOnMeDoit}
       />
 
       <GraphiqueDepenses transactions={transactions} />
