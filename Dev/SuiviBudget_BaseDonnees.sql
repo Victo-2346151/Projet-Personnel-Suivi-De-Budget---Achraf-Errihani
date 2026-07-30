@@ -61,3 +61,27 @@ CREATE TABLE IF NOT EXISTS transactions (
     FOREIGN KEY (categorieId) REFERENCES categories(id)
     ON DELETE RESTRICT
 );
+
+-- ------------------------------------------------------------
+-- Table dettes
+-- Contient les dettes personnelles de chaque utilisateur (argent
+-- qu'il doit a quelqu'un, ou qu'on lui doit)
+-- ------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS dettes (
+  id INT AUTO_INCREMENT PRIMARY KEY,          -- identifiant unique de la dette
+  utilisateurId INT NOT NULL,                 -- reference vers le proprietaire
+  personne VARCHAR(100) NOT NULL,             -- nom de la personne concernee
+  montant DECIMAL(10, 2) NOT NULL,            -- montant de la dette (toujours positif)
+  direction ENUM('je_dois', 'on_me_doit') NOT NULL,  -- sens de la dette
+  description VARCHAR(255),                   -- description libre (optionnel)
+  dateCreation DATE NOT NULL,                 -- date a laquelle la dette a ete creee
+  statut ENUM('Réglée', 'Non réglée') NOT NULL DEFAULT 'Non réglée',
+
+  -- Si l'utilisateur est supprime, ses dettes le sont aussi
+  CONSTRAINT fkDettesUtilisateur
+    FOREIGN KEY (utilisateurId) REFERENCES utilisateurs(id)
+    ON DELETE CASCADE,
+
+  -- Le montant d'une dette doit toujours etre strictement positif
+  CONSTRAINT chkDettesMontantPositif CHECK (montant > 0)
+);
