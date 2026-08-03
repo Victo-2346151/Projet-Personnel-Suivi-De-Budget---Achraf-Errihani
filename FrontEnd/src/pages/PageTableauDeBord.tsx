@@ -1,18 +1,37 @@
 import { useEffect, useState } from 'react';
+import { recupererBudgets } from '../api/budgets';
 import { listerCategories, supprimerCategorie } from '../api/categories';
 import { changerStatutDette, listerDettes, recupererResumeDettes, supprimerDette } from '../api/dettes';
-import { listerTransactions, recupererSolde, supprimerTransaction } from '../api/transactions';
+import {
+  IFiltresTransactions,
+  listerTransactions,
+  recupererResumeMois,
+  recupererSolde,
+  recupererStatistiquesMensuelles,
+  supprimerTransaction,
+} from '../api/transactions';
+import AlerteBudget from '../composantes/AlerteBudget';
 import CartesStatistiques from '../composantes/CartesStatistiques';
+import FiltresTransactions from '../composantes/FiltresTransactions';
 import FormulaireCategorie from '../composantes/FormulaireCategorie';
 import FormulaireDette from '../composantes/FormulaireDette';
 import FormulaireTransaction from '../composantes/FormulaireTransaction';
 import GraphiqueDepenses from '../composantes/GraphiqueDepenses';
+import GraphiqueMensuel from '../composantes/GraphiqueMensuel';
 import { IconePlus } from '../composantes/Icones';
 import ListeCategories from '../composantes/ListeCategories';
 import ListeDettes from '../composantes/ListeDettes';
 import ListeTransactions from '../composantes/ListeTransactions';
 import ResumeDettes from '../composantes/ResumeDettes';
-import type { ICategorie, IDette, ITransactionAvecCategorie } from '../types';
+import { genererCsvTransactions, telechargerCsv } from '../utils/exportCsv';
+import type {
+  IBudgetCategorie,
+  ICategorie,
+  IDette,
+  IResumeMois,
+  IStatistiqueMensuelle,
+  ITransactionAvecCategorie,
+} from '../types';
 
 /**
  * Page principale affichée une fois l'utilisateur connecté. Permet de
@@ -26,10 +45,19 @@ function PageTableauDeBord(): JSX.Element {
   const [messageErreurCategories, setMessageErreurCategories] = useState<string>('');
 
   const [transactions, setTransactions] = useState<ITransactionAvecCategorie[]>([]);
+  const [toutesLesTransactions, setToutesLesTransactions] = useState<ITransactionAvecCategorie[]>([]);
   const [transactionAModifier, setTransactionAModifier] = useState<ITransactionAvecCategorie | null>(null);
   const [formTransactionOuvert, setFormTransactionOuvert] = useState<boolean>(false);
   const [solde, setSolde] = useState<number>(0);
   const [messageErreurTransactions, setMessageErreurTransactions] = useState<string>('');
+  const [budgets, setBudgets] = useState<IBudgetCategorie[]>([]);
+  const [filtresTransactions, setFiltresTransactions] = useState<IFiltresTransactions>({});
+  const [statistiquesMensuelles, setStatistiquesMensuelles] = useState<IStatistiqueMensuelle[]>([]);
+  const [resumeMois, setResumeMois] = useState<IResumeMois>({
+    totalRevenus: 0,
+    totalDepenses: 0,
+    solde: 0,
+  });
 
   const [dettes, setDettes] = useState<IDette[]>([]);
   const [detteAModifier, setDetteAModifier] = useState<IDette | null>(null);
@@ -45,13 +73,25 @@ function PageTableauDeBord(): JSX.Element {
   }, []);
 
   useEffect(() => {
-    listerTransactions()
+    listerTransactions(filtresTransactions)
       .then((transactionsRecues) => setTransactions(transactionsRecues))
       .catch(() => setMessageErreurTransactions('Erreur lors du chargement des transactions.'));
+  }, [filtresTransactions]);
 
+  useEffect(() => {
     recupererSolde()
       .then((soldeRecu) => setSolde(soldeRecu.solde))
       .catch(() => setMessageErreurTransactions('Erreur lors du chargement du solde.'));
+
+    recupererStatistiquesMensuelles()
+      .then((statistiquesRecues) => setStatistiquesMensuelles(statistiquesRecues))
+      .catch(() =>
+        setMessageErreurTransactions('Erreur lors du chargement des statistiques mensuelles.')
+      );
+
+    rafraichirToutesLesTransactions();
+    rafraichirResumeMois();
+    rafraichirBudgets();
   }, []);
 
   useEffect(() => {
@@ -105,6 +145,33 @@ function PageTableauDeBord(): JSX.Element {
     }
   }
 
+  function rafraichirToutesLesTransactions(): void {
+    // Toujours non filtré : sert au calcul des cartes statistiques
+    // globales et à la répartition des dépenses, séparément de la liste
+    // affichée dans le tableau (qui, elle, respecte les filtres actifs).
+    listerTransactions()
+      .then((transactionsRecues) => setToutesLesTransactions(transactionsRecues))
+      .catch(() => setMessageErreurTransactions('Erreur lors du chargement des transactions.'));
+  }
+
+  function rafraichirBudgets(): void {
+    recupererBudgets()
+      .then((budgetsRecus) => setBudgets(budgetsRecus))
+      .catch(() => setMessageErreurTransactions('Erreur lors du chargement des budgets.'));
+  }
+
+  function rafraichirResumeMois(): void {
+    recupererResumeMois()
+      .then((resumeMoisRecu) => setResumeMois(resumeMoisRecu))
+      .catch(() => setMessageErreurTransactions('Erreur lors du chargement du résumé du mois.'));
+  }
+
+  function gererExportCsv(): void {
+    const contenuCsv = genererCsvTransactions(transactions);
+    const dateDuJour = new Date().toISOString().slice(0, 10);
+    telechargerCsv(contenuCsv, `transactions_${dateDuJour}.csv`);
+  }
+
   function ouvrirNouvelleTransaction(): void {
     setTransactionAModifier(null);
     setFormTransactionOuvert(true);
@@ -134,6 +201,10 @@ function PageTableauDeBord(): JSX.Element {
     recupererSolde()
       .then((soldeRecu) => setSolde(soldeRecu.solde))
       .catch(() => setMessageErreurTransactions('Erreur lors de la mise à jour du solde.'));
+
+    rafraichirToutesLesTransactions();
+    rafraichirResumeMois();
+    rafraichirBudgets();
   }
 
   async function gererSuppressionTransaction(transaction: ITransactionAvecCategorie): Promise<void> {
@@ -147,6 +218,10 @@ function PageTableauDeBord(): JSX.Element {
 
       const soldeRecu = await recupererSolde();
       setSolde(soldeRecu.solde);
+
+      rafraichirToutesLesTransactions();
+      rafraichirResumeMois();
+      rafraichirBudgets();
     } catch (erreur) {
       setMessageErreurTransactions(
         erreur instanceof Error ? erreur.message : 'Erreur lors de la suppression.'
@@ -224,16 +299,23 @@ function PageTableauDeBord(): JSX.Element {
     }
   }
 
-  const totalRevenus = transactions
+  // Calculés à partir de toutesLesTransactions (jamais filtré), pour que
+  // ces totaux globaux restent cohérents avec Solde total peu importe les
+  // filtres actifs sur la liste affichée (`transactions`).
+  const totalRevenus = toutesLesTransactions
     .filter((transaction) => transaction.type === 'revenu')
     .reduce((total, transaction) => total + transaction.montant, 0);
 
-  const totalDepenses = transactions
+  const totalDepenses = toutesLesTransactions
     .filter((transaction) => transaction.type === 'depense')
     .reduce((total, transaction) => total + transaction.montant, 0);
 
-  const nbTransactionsRevenu = transactions.filter((transaction) => transaction.type === 'revenu').length;
-  const nbTransactionsDepense = transactions.filter((transaction) => transaction.type === 'depense').length;
+  const nbTransactionsRevenu = toutesLesTransactions.filter(
+    (transaction) => transaction.type === 'revenu'
+  ).length;
+  const nbTransactionsDepense = toutesLesTransactions.filter(
+    (transaction) => transaction.type === 'depense'
+  ).length;
 
   return (
     <>
@@ -245,9 +327,15 @@ function PageTableauDeBord(): JSX.Element {
         nbTransactionsDepense={nbTransactionsDepense}
         totalJeDois={totalJeDois}
         totalOnMeDoit={totalOnMeDoit}
+        resumeMois={resumeMois}
       />
 
-      <GraphiqueDepenses transactions={transactions} />
+      <div className="grille-deux-colonnes">
+        <GraphiqueDepenses transactions={toutesLesTransactions} />
+        <GraphiqueMensuel statistiques={statistiquesMensuelles} />
+      </div>
+
+      <AlerteBudget budgets={budgets} />
 
       <div className="grille-tableau-bord">
         <div className="section-colonne">
@@ -280,15 +368,25 @@ function PageTableauDeBord(): JSX.Element {
         <div className="section-colonne">
           <div className="entete-section">
             <h2>Mes transactions</h2>
-            <button
-              type="button"
-              className="bouton bouton-primaire"
-              onClick={ouvrirNouvelleTransaction}
-              disabled={categories.length === 0}
-            >
-              <IconePlus />
-              Nouvelle
-            </button>
+            <div style={{ display: 'flex', gap: 8 }}>
+              <button
+                type="button"
+                className="bouton bouton-secondaire"
+                onClick={gererExportCsv}
+                disabled={transactions.length === 0}
+              >
+                Exporter en CSV
+              </button>
+              <button
+                type="button"
+                className="bouton bouton-primaire"
+                onClick={ouvrirNouvelleTransaction}
+                disabled={categories.length === 0}
+              >
+                <IconePlus />
+                Nouvelle
+              </button>
+            </div>
           </div>
 
           {formTransactionOuvert && (
@@ -301,6 +399,12 @@ function PageTableauDeBord(): JSX.Element {
           )}
 
           {messageErreurTransactions !== '' && <p className="message-erreur">{messageErreurTransactions}</p>}
+
+          <FiltresTransactions
+            categories={categories}
+            filtres={filtresTransactions}
+            auChangementFiltres={setFiltresTransactions}
+          />
 
           <ListeTransactions
             transactions={transactions}

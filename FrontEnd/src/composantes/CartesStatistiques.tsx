@@ -1,5 +1,6 @@
 import { formaterMontant } from '../utils/formatage';
 import { IconePortefeuille, IconeRecu, IconeTendanceBaisse, IconeTendanceHausse } from './Icones';
+import type { IResumeMois } from '../types';
 
 interface IPropsCartesStatistiques {
   solde: number;
@@ -9,12 +10,13 @@ interface IPropsCartesStatistiques {
   nbTransactionsDepense: number;
   totalJeDois: number;
   totalOnMeDoit: number;
+  resumeMois: IResumeMois;
 }
 
 /**
- * Affiche les quatre cartes statistiques du tableau de bord : solde
- * total (vert s'il est positif ou nul, rouge s'il est négatif),
- * revenus, dépenses et solde des dettes.
+ * Affiche les cartes statistiques du tableau de bord : solde total
+ * (vert s'il est positif ou nul, rouge s'il est négatif), revenus,
+ * dépenses, solde des dettes et résumé du mois calendaire courant.
  */
 function CartesStatistiques({
   solde,
@@ -24,11 +26,14 @@ function CartesStatistiques({
   nbTransactionsDepense,
   totalJeDois,
   totalOnMeDoit,
+  resumeMois,
 }: IPropsCartesStatistiques): JSX.Element {
   const couleurSolde = solde >= 0 ? 'var(--couleur-solde-positif)' : 'var(--couleur-solde-negatif)';
   const soldeDettes = totalOnMeDoit - totalJeDois;
   const couleurSoldeDettes =
     soldeDettes >= 0 ? 'var(--couleur-solde-positif)' : 'var(--couleur-solde-negatif)';
+  const couleurSoldeMois =
+    resumeMois.solde >= 0 ? 'var(--couleur-solde-positif)' : 'var(--couleur-solde-negatif)';
 
   return (
     <div className="grille-stats">
@@ -60,6 +65,18 @@ function CartesStatistiques({
         <span className="carte-meta">
           <IconeTendanceBaisse />
           {nbTransactionsDepense} transaction{nbTransactionsDepense > 1 ? 's' : ''}
+        </span>
+      </div>
+
+      <div className="carte carte-ombre-legere">
+        <span className="carte-accroche">Ce mois-ci</span>
+        <span className="carte-valeur" style={{ color: couleurSoldeMois }}>
+          {formaterMontant(resumeMois.solde)}
+        </span>
+        <span className="carte-meta">
+          <IconePortefeuille taille={14} />
+          {formaterMontant(resumeMois.totalRevenus)} revenus · {formaterMontant(resumeMois.totalDepenses)}{' '}
+          dépenses
         </span>
       </div>
 

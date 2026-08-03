@@ -63,7 +63,11 @@ function ListeCategories({
             <button
               type="button"
               className="bouton bouton-icone bouton-fantome"
-              onClick={() => auClicSupprimer(categorie)}
+              onClick={() => {
+                if (window.confirm(`Supprimer la catégorie « ${categorie.nom} » ?`)) {
+                  auClicSupprimer(categorie);
+                }
+              }}
               aria-label="Supprimer"
             >
               <IconeCorbeille />

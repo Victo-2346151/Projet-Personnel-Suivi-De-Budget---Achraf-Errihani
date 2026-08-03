@@ -85,3 +85,36 @@ export interface IResumeDettes {
   totalJeDois: number;
   totalOnMeDoit: number;
 }
+
+/**
+ * Représente l'état d'utilisation du budget limite d'une catégorie de
+ * dépense pour le mois calendaire courant.
+ */
+export interface IBudgetCategorie {
+  categorieId: number;
+  nom: string;
+  budgetLimite: number;
+  montantDepense: number;
+  pourcentageUtilise: number;
+}
+
+/**
+ * Représente les totaux de revenus, dépenses et solde pour le mois
+ * calendaire courant.
+ */
+export interface IResumeMois {
+  totalRevenus: number;
+  totalDepenses: number;
+  solde: number;
+}
+
+/**
+ * Représente les totaux de revenus et dépenses d'un mois donné, utilisé
+ * pour l'histogramme des dépenses des derniers mois.
+ */
+export interface IStatistiqueMensuelle {
+  mois: number;
+  annee: number;
+  totalRevenus: number;
+  totalDepenses: number;
+}

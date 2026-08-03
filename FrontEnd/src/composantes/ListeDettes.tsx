@@ -98,7 +98,11 @@ function ListeDettes({
               <button
                 type="button"
                 className="bouton bouton-icone bouton-fantome"
-                onClick={() => auClicSupprimer(dette)}
+                onClick={() => {
+                  if (window.confirm(`Supprimer la dette de ${dette.personne} ?`)) {
+                    auClicSupprimer(dette);
+                  }
+                }}
                 aria-label="Supprimer"
               >
                 <IconeCorbeille />
