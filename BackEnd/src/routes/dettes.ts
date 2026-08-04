@@ -3,6 +3,7 @@ import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import bd from '../config/bd';
 import estConnecte from '../middlewares/estConnecte';
 import type { IDette } from '../types';
+import { estTexteNonVide } from '../utils/validation';
 
 const routeurDettes = Router();
 
@@ -102,7 +103,7 @@ routeurDettes.post('/dettes', async (requete, reponse) => {
   };
 
   if (
-    personne === undefined ||
+    !estTexteNonVide(personne) ||
     montant === undefined ||
     direction === undefined ||
     dateCreation === undefined
@@ -154,7 +155,7 @@ routeurDettes.put('/dettes/:id', async (requete, reponse) => {
   };
 
   if (
-    personne === undefined ||
+    !estTexteNonVide(personne) ||
     montant === undefined ||
     direction === undefined ||
     dateCreation === undefined

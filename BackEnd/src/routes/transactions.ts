@@ -3,6 +3,7 @@ import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import bd from '../config/bd';
 import estConnecte from '../middlewares/estConnecte';
 import type { IResumeMois, IStatistiqueMensuelle, ITransactionAvecCategorie } from '../types';
+import { estDateValide } from '../utils/validation';
 
 const routeurTransactions = Router();
 
@@ -288,6 +289,11 @@ routeurTransactions.post('/transactions', async (requete, reponse) => {
     return;
   }
 
+  if (!estDateValide(dateTransaction)) {
+    reponse.status(400).json({ message: 'La date doit être une date valide au format AAAA-MM-JJ.' });
+    return;
+  }
+
   try {
     const messageErreurCategorie = await validerCategorie(categorieId, requete.session.utilisateurId, type);
 
@@ -345,6 +351,11 @@ routeurTransactions.put('/transactions/:id', async (requete, reponse) => {
 
   if (montant <= 0) {
     reponse.status(400).json({ message: 'Le montant doit être supérieur à zéro.' });
+    return;
+  }
+
+  if (!estDateValide(dateTransaction)) {
+    reponse.status(400).json({ message: 'La date doit être une date valide au format AAAA-MM-JJ.' });
     return;
   }
 
