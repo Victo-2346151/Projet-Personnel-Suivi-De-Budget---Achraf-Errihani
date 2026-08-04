@@ -3,6 +3,7 @@ import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import bd from '../config/bd';
 import estConnecte from '../middlewares/estConnecte';
 import type { IBudgetCategorie, ICategorie } from '../types';
+import { estTexteNonVide } from '../utils/validation';
 
 const routeurCategories = Router();
 
@@ -114,7 +115,7 @@ routeurCategories.post('/categories', async (requete, reponse) => {
     budgetLimite?: number | null;
   };
 
-  if (nom === undefined || type === undefined) {
+  if (!estTexteNonVide(nom) || type === undefined) {
     reponse.status(400).json({ message: 'Le nom et le type sont requis.' });
     return;
   }
@@ -153,7 +154,7 @@ routeurCategories.put('/categories/:id', async (requete, reponse) => {
     budgetLimite?: number | null;
   };
 
-  if (nom === undefined || type === undefined) {
+  if (!estTexteNonVide(nom) || type === undefined) {
     reponse.status(400).json({ message: 'Le nom et le type sont requis.' });
     return;
   }
