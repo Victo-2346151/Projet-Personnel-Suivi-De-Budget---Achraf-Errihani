@@ -44,6 +44,7 @@
   --couleur-montant-depense: var(--couleur-texte);
   --couleur-solde-positif: #7bd9a5;
   --couleur-solde-negatif: #f28b8b;
+  --couleur-avertissement: #e8b567;
 
   --etiquette-accent-fond: var(--couleur-accent-800);
   --etiquette-accent-texte: var(--couleur-accent-100);
@@ -80,6 +81,7 @@
   --couleur-montant-depense: var(--couleur-texte);
   --couleur-solde-positif: #2f8a54;
   --couleur-solde-negatif: #c94444;
+  --couleur-avertissement: #b8842c;
 
   --etiquette-accent-fond: var(--couleur-accent-100);
   --etiquette-accent-texte: var(--couleur-accent-700);
@@ -437,7 +439,7 @@ p {
 /* Grilles du tableau de bord */
 .grille-stats {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: var(--espace-4);
 }
 
@@ -564,9 +566,6 @@ p {
 }
 
 @media (max-width: 860px) {
-  .grille-stats {
-    grid-template-columns: 1fr;
-  }
   .grille-tableau-bord {
     grid-template-columns: 1fr;
   }

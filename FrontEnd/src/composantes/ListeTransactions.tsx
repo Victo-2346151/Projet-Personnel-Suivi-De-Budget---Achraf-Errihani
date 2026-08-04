@@ -95,7 +95,11 @@ function ListeTransactions({
                 <button
                   type="button"
                   className="bouton bouton-icone bouton-fantome"
-                  onClick={() => auClicSupprimer(transaction)}
+                  onClick={() => {
+                    if (window.confirm('Supprimer cette transaction ?')) {
+                      auClicSupprimer(transaction);
+                    }
+                  }}
                   aria-label="Supprimer"
                 >
                   <IconeCorbeille taille={14} />

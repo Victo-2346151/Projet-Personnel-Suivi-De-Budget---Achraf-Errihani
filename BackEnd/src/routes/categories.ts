@@ -2,7 +2,7 @@ import { Router } from 'express';
 import type { ResultSetHeader, RowDataPacket } from 'mysql2';
 import bd from '../config/bd';
 import estConnecte from '../middlewares/estConnecte';
-import type { ICategorie } from '../types';
+import type { IBudgetCategorie, ICategorie } from '../types';
 
 const routeurCategories = Router();
 
@@ -22,6 +22,13 @@ interface ErreurMySQL extends Error {
 
 interface LigneTransactionExistence extends RowDataPacket {
   id: number;
+}
+
+interface LigneBudgetCategorie extends RowDataPacket {
+  categorieId: number;
+  nom: string;
+  budgetLimite: number;
+  montantDepense: number;
 }
 
 /**
@@ -60,6 +67,40 @@ routeurCategories.get('/categories', async (requete, reponse) => {
   } catch (erreur) {
     console.error(erreur);
     reponse.status(500).json({ message: 'Erreur lors de la récupération des catégories.' });
+  }
+});
+
+/**
+ * Retourne, pour chaque catégorie de dépense de l'utilisateur connecté
+ * ayant un budget limite défini, le montant dépensé pour le mois
+ * calendaire courant et le pourcentage du budget utilisé.
+ */
+routeurCategories.get('/categories/budgets', async (requete, reponse) => {
+  try {
+    const [lignesBudgets] = await bd.query<LigneBudgetCategorie[]>(
+      `SELECT c.id AS categorieId, c.nom, c.budgetLimite, COALESCE(SUM(t.montant), 0) AS montantDepense
+       FROM categories c
+       LEFT JOIN transactions t
+         ON t.categorieId = c.id
+         AND MONTH(t.dateTransaction) = MONTH(CURDATE())
+         AND YEAR(t.dateTransaction) = YEAR(CURDATE())
+       WHERE c.utilisateurId = ? AND c.type = 'depense' AND c.budgetLimite IS NOT NULL
+       GROUP BY c.id, c.nom, c.budgetLimite`,
+      [requete.session.utilisateurId]
+    );
+
+    const budgets: IBudgetCategorie[] = lignesBudgets.map((ligne) => ({
+      categorieId: ligne.categorieId,
+      nom: ligne.nom,
+      budgetLimite: ligne.budgetLimite,
+      montantDepense: ligne.montantDepense,
+      pourcentageUtilise: (ligne.montantDepense / ligne.budgetLimite) * 100,
+    }));
+
+    reponse.json(budgets);
+  } catch (erreur) {
+    console.error(erreur);
+    reponse.status(500).json({ message: 'Erreur lors du calcul des budgets.' });
   }
 });
 
