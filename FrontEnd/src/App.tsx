@@ -12,6 +12,9 @@ const CLE_STOCKAGE_THEME = 'suiviBudget.theme';
 /**
  * Détermine le thème initial : préférence déjà enregistrée par
  * l'utilisateur, sinon préférence système, sinon sombre par défaut.
+ *
+ * @author Anthropic. (2026). Claude Code (Claude Sonnet 5) [Modèle massif
+ *         de langage]. https://claude.com/claude-code
  */
 function themeInitial(): Theme {
   const themeStocke = window.localStorage.getItem(CLE_STOCKAGE_THEME);
@@ -43,11 +46,20 @@ function App(): JSX.Element {
       .finally(() => setVerificationTerminee(true));
   }, []);
 
+  // Applique et persiste le thème clair/sombre.
+  // @author Anthropic. (2026). Claude Code (Claude Sonnet 5) [Modèle massif
+  //         de langage]. https://claude.com/claude-code
   useEffect(() => {
     document.documentElement.dataset.theme = theme;
     window.localStorage.setItem(CLE_STOCKAGE_THEME, theme);
   }, [theme]);
 
+  /**
+   * Bascule entre le thème clair et le thème sombre.
+   *
+   * @author Anthropic. (2026). Claude Code (Claude Sonnet 5) [Modèle massif
+   *         de langage]. https://claude.com/claude-code
+   */
   function basculerTheme(): void {
     setTheme((themeActuel) => (themeActuel === 'sombre' ? 'clair' : 'sombre'));
   }
