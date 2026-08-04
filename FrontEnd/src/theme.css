@@ -18,6 +18,11 @@
   --rayon-lg: 14px;
 }
 
+/*
+ * Variables des thèmes clair et sombre, et bascule via [data-theme].
+ * Anthropic. (2026). Claude Code (Claude Sonnet 5) [Modèle massif de
+ * langage]. https://claude.com/claude-code
+ */
 :root,
 :root[data-theme='sombre'] {
   color-scheme: dark;

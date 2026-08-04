@@ -1,3 +1,9 @@
+/**
+ * Composante GraphiqueDepenses.
+ *
+ * @author Anthropic. (2026). Claude Code (Claude Sonnet 5) [Modèle massif
+ *         de langage]. https://claude.com/claude-code
+ */
 import { formaterMontant } from '../utils/formatage';
 import { IconeGraphique } from './Icones';
 import type { ITransactionAvecCategorie } from '../types';
